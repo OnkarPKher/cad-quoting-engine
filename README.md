@@ -100,7 +100,7 @@ pip install -r requirements.txt
 ### Step-by-Step Setup (Mac/Linux)
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/cad-quoting-engine.git
+git clone https://github.com/OnkarPKher/cad-quoting-engine.git
 cd cad-quoting-engine
 
 # Create and activate virtual environment
