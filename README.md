@@ -77,7 +77,7 @@ When you run the quoting engine, you'll get a **detailed cost breakdown** includ
 **Step 1: Download the Code**
 ```bash
 # Open PowerShell or Command Prompt, then run:
-git clone https://github.com/YOUR_USERNAME/cad-quoting-engine.git
+git clone https://github.com/OnkarPKher/cad-quoting-engine.git
 cd cad-quoting-engine
 ```
 
