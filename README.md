@@ -12,6 +12,35 @@ This project implements an automated quoting system for CNC machining that analy
 - Quantity discounts
 - Lead time estimation
 
+## What You'll See When You Run It
+
+When you run the quoting engine, you'll get a **detailed cost breakdown** including:
+
+ **Cost Summary**
+- Per unit cost and total cost
+- Material cost breakdown
+- Machine time cost (coarse/medium/fine milling)
+- Labor costs (programming, setup, QC, finishing)
+
+ **Part Analysis**
+- Dimensions (length × width × height)
+- Volume and surface area
+- Complexity score (0-10 scale)
+- Detected features (holes, cavities, pockets, sharp edges)
+
+ **Material Efficiency**
+- Raw material block size needed
+- Material waste percentage
+- Industry-standard optimization analysis
+
+ **Pricing Details**
+- Quantity discounts applied
+- Complexity and size multipliers
+- Expedited shipping options
+- Lead time estimation
+
+**Example Output**: Run `python src/main.py data/suspension-mount.step` to see a complete quote for a sample part!
+
 ## Features
 
 ### Geometry Analysis
@@ -40,29 +69,45 @@ This project implements an automated quoting system for CNC machining that analy
 ## Installation
 
 ### Prerequisites
-- Python 3.8+
-- pip
+- Python 3.8+ (Download from [python.org](https://python.org))
+- Git (Download from [git-scm.com](https://git-scm.com))
 
-### Setup
-1. Clone the repository:
+### Step-by-Step Setup (Windows)
+
+**Step 1: Download the Code**
 ```bash
-git clone <repository-url>
+# Open PowerShell or Command Prompt, then run:
+git clone https://github.com/YOUR_USERNAME/cad-quoting-engine.git
 cd cad-quoting-engine
 ```
 
-2. Create and activate a virtual environment:
+**Step 2: Set up Python Environment**
 ```bash
-# Windows
+# Create a virtual environment
 python -m venv venv
+
+# Activate the environment (Windows)
 .\venv\Scripts\Activate.ps1
 
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
+# You should see (venv) at the start of your command line
 ```
 
-3. Install dependencies:
+**Step 3: Install Required Packages**
 ```bash
+pip install -r requirements.txt
+```
+
+### Step-by-Step Setup (Mac/Linux)
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/cad-quoting-engine.git
+cd cad-quoting-engine
+
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install packages
 pip install -r requirements.txt
 ```
 
@@ -70,19 +115,49 @@ pip install -r requirements.txt
 
 ### Command Line Interface
 
-Basic usage:
+**Basic Usage - Get Quote for 1 Part:**
 ```bash
 python src/main.py data/suspension-mount.step
 ```
 
-With quantity:
+**Get Quote for Multiple Parts (with quantity discount):**
 ```bash
 python src/main.py data/suspension-mount.step --quantity 10
 ```
 
-Save results to JSON:
+**Get Quote with Expedited Shipping:**
 ```bash
-python src/main.py data/suspension-mount.step --quantity 5 --output quote_results.json
+# 5-day delivery (+30% premium)
+python src/main.py data/suspension-mount.step --expedited 5_days
+
+# 4-day delivery (+60% premium)  
+python src/main.py data/suspension-mount.step --expedited 4_days
+
+# 3-day delivery (+100% premium)
+python src/main.py data/suspension-mount.step --expedited 3_days
+```
+
+**Save Results to File:**
+```bash
+python src/main.py data/suspension-mount.step --quantity 5 --output my_quote.json
+```
+
+**Test Different Sample Parts:**
+```bash
+# Simple bracket
+python src/main.py data/suspension-mount.step
+
+# Complex gear
+python src/main.py data/test-gear.STEP
+
+# Piston head
+python src/main.py data/piston-head.STEP
+
+# Control bracket
+python src/main.py data/control-bracket.STEP
+
+# Complex manifold
+python src/main.py "data/Pump Manifold v3.step"
 ```
 
 ### Command Line Options
@@ -108,6 +183,8 @@ The quoting engine uses a three-phase milling approach:
 - **Fine milling**: $0.00175/mm³
 
 ### Labor Costs
+
+**Current Rates (Customizable):**
 - **CAD/CAM Programming**: $110/hour
 - **Machine Setup**: $65/hour
 - **Tool Setup**: $55/hour
@@ -115,11 +192,32 @@ The quoting engine uses a three-phase milling approach:
 - **Deburring/Finishing**: $45/hour
 - **Project Management**: $85/hour
 
+**Note**: These are baseline rates based on industry averages. The system is designed so that **manufacturers can customize these rates** based on their:
+- Geographic location and local market rates
+- Shop overhead and operating costs
+- Experience level and specialization
+- Equipment quality and capabilities
+- Target profit margins
+
+To customize rates, edit the `labor_rates` dictionary in `src/main.py`.
+
 ### Baseline Specification Data
 - **Aluminum 6061 Density**: 2.7 g/cm³
 - **Aluminum Price**: $5.00/kg
 - **CNC Machine Type**: Haas CNC Machines
 - **CNC Machining Rate**: $100/hour
+
+### Understanding the $200 Minimum Price
+
+The $200 minimum price per part covers the **fixed costs** that every CNC job requires, regardless of part size:
+
+- **CAD/CAM Programming**: Creating toolpaths and machine instructions
+- **Machine Setup**: Fixturing, workholding, and machine preparation
+- **Tool Setup**: Installing and calibrating cutting tools
+- **Quality Inspection**: Measuring and verifying part dimensions
+- **Administrative Overhead**: Order processing, documentation, and project management
+
+Even a very simple, small part requires these steps, so this minimum ensures the shop doesn't lose money on basic jobs. For complex parts, the actual cost will be higher based on material, machining time, and complexity factors.
 
 ### Industry Standards
 - **Material Waste Target**: 20-40% (industry optimal)
@@ -228,7 +326,3 @@ cad-quoting-engine/
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
