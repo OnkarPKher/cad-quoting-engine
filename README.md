@@ -11,6 +11,7 @@ This project implements an automated quoting system for CNC machining that analy
 - Labor costs for various operations
 - Quantity discounts
 - Lead time estimation
+- **NEW**: Shipping tiers (Economy, Standard, Expedited)
 
 ## What You'll See When You Run It
 
@@ -18,9 +19,9 @@ When you run the quoting engine, you'll get a **detailed cost breakdown** includ
 
  **Cost Summary**
 - Per unit cost and total cost
-- Material cost breakdown
-- Machine time cost (coarse/medium/fine milling)
-- Labor costs (programming, setup, QC, finishing)
+- Material cost breakdown (now scales properly with quantity)
+- Machine time cost (coarse/medium/fine milling) - per part AND total
+- Labor costs (programming, setup, QC, finishing) - per part AND total
 
  **Part Analysis**
 - Dimensions (length × width × height)
@@ -34,12 +35,30 @@ When you run the quoting engine, you'll get a **detailed cost breakdown** includ
 - Industry-standard optimization analysis
 
  **Pricing Details**
-- Quantity discounts applied
+- Quantity discounts applied (fixed exponential growth issue)
 - Complexity and size multipliers
-- Expedited shipping options
-- Lead time estimation
+- **NEW**: Shipping tier options (Economy/Standard/Expedited)
+- Lead time estimation (now scales with quantity)
 
 **Example Output**: Run `python src/main.py data/suspension-mount.step` to see a complete quote for a sample part!
+
+## Recent Improvements (v2.0)
+
+### ✅ Fixed Major Issues
+- **Material costs now scale properly** with quantity (was stuck at $2.43)
+- **Eliminated exponential cost growth** with quantity increases
+- **Milling costs now scale** with number of parts
+- **Labor costs now scale** with number of parts  
+- **Lead time now scales** with quantity (was fixed at 11 days)
+- **Added shipping tiers**: Economy (15% discount), Standard, Expedited (30% premium)
+
+### ✅ More Realistic Pricing
+- Updated aluminum price from $5.00/kg to $8.50/kg for more realistic material costs
+- Fixed quantity multiplier logic to prevent excessive discounts
+- Improved cost breakdown to show both per-part and total costs
+- Better lead time calculation that accounts for setup vs. per-part operations
+
+**Example**: A part that costs $200 for 1 unit now costs ~$170 for 10 units (15% discount) instead of the previous exponential growth.
 
 ## Features
 
@@ -58,18 +77,21 @@ When you run the quoting engine, you'll get a **detailed cost breakdown** includ
 - Labor costs for programming, setup, QC, and finishing
 - Complexity multipliers based on part features
 - Feature detection for holes, cavities, sharp edges, and pockets
-- Quantity discounts with tiered pricing
-- Expedited shipping options
+- **Fixed**: Quantity discounts with realistic tiered pricing
+- **NEW**: Shipping tier options (Economy/Standard/Expedited)
 
 ### Lead Time Estimation
-- Lead times based on part complexity
+- **Fixed**: Lead times now scale with quantity and complexity
 - Setup time considerations
 - Workday assumptions with efficiency factors
+- **NEW**: Shipping tier affects lead time (Economy = longer, Expedited = shorter)
 
 ## Installation
 
 ### Prerequisites
-- Python 3.8+ (Download from [python.org](https://python.org))
+- Python 3.8+ 
+  - **Windows users**: Download from [python.org](https://python.org) OR use the **Microsoft Store** (often easier!)
+  - **Mac/Linux users**: Download from [python.org](https://python.org)
 - Git (Download from [git-scm.com](https://git-scm.com))
 
 ### Step-by-Step Setup (Windows)
@@ -125,7 +147,19 @@ python src/main.py data/suspension-mount.step
 python src/main.py data/suspension-mount.step --quantity 10
 ```
 
-**Get Quote with Expedited Shipping:**
+**Get Quote with Different Shipping Tiers:**
+```bash
+# Economy shipping (15% discount, longer lead time)
+python src/main.py data/suspension-mount.step --shipping economy
+
+# Standard shipping (default)
+python src/main.py data/suspension-mount.step --shipping standard
+
+# Expedited shipping (30% premium, faster delivery)
+python src/main.py data/suspension-mount.step --shipping expedited
+```
+
+**Get Quote with Expedited Shipping (Legacy):**
 ```bash
 # 5-day delivery (+30% premium)
 python src/main.py data/suspension-mount.step --expedited 5_days
@@ -164,7 +198,8 @@ python src/main.py "data/Pump Manifold v3.step"
 
 - `step_file`: Path to the STEP file (required)
 - `--quantity, -q`: Quantity of parts (default: 1)
-- `--expedited, -e`: Expedited shipping option (5_days, 4_days, 3_days)
+- `--shipping, -s`: Shipping tier (economy, standard, expedited) - **NEW!**
+- `--expedited, -e`: Expedited shipping option (5_days, 4_days, 3_days) - Legacy
 - `--output, -o`: Output JSON file path (optional)
 
 ## Methodology
@@ -201,9 +236,25 @@ The quoting engine uses a three-phase milling approach:
 
 To customize rates, edit the `labor_rates` dictionary in `src/main.py`.
 
+### **NEW**: Shipping Tiers
+
+**Economy (15% discount)**
+- Longer lead time (1.5x standard)
+- Best for non-urgent projects
+- Significant cost savings
+
+**Standard (baseline)**
+- Normal pricing and lead time
+- Best balance of cost and speed
+
+**Expedited (30% premium)**
+- Faster delivery (0.7x standard lead time)
+- Best for urgent projects
+- Premium pricing
+
 ### Baseline Specification Data
 - **Aluminum 6061 Density**: 2.7 g/cm³
-- **Aluminum Price**: $5.00/kg
+- **Aluminum Price**: $8.50/kg (**Updated from $5.00/kg for realism**)
 - **CNC Machine Type**: Haas CNC Machines
 - **CNC Machining Rate**: $100/hour
 
@@ -233,11 +284,12 @@ Even a very simple, small part requires these steps, so this minimum ensures the
 
 ### Cost Factors
 
-1. **Material Cost**: `volume_cm³ × density_g/cm³ × price_per_kg`
-2. **Machine Time Cost**: Sum of three milling phases with different rates
-3. **Labor Costs**: Programming, setup, QC, and finishing operations
+1. **Material Cost**: `volume_cm³ × density_g/cm³ × price_per_kg` (**Now scales with quantity**)
+2. **Machine Time Cost**: Sum of three milling phases with different rates (**Now scales with quantity**)
+3. **Labor Costs**: Programming, setup, QC, and finishing operations (**Now scales with quantity**)
 4. **Complexity Multiplier**: Based on surface area to volume ratio, face count, and edge count
-5. **Quantity Multiplier**: Tiered discounts for larger quantities
+5. **Quantity Multiplier**: **Fixed**: Tiered discounts for larger quantities (5-30%)
+6. **Shipping Tier**: Economy (0.85x), Standard (1.0x), Expedited (1.3x)
 
 ### Complexity Scoring
 
@@ -279,7 +331,7 @@ cad-quoting-engine/
 
 ### Assumptions Made
 
-1. **Material**: 6061 Aluminum (density: 2.7 g/cm³, price: $5.00/kg) - Baseline specification
+1. **Material**: 6061 Aluminum (density: 2.7 g/cm³, price: $8.50/kg) - **Updated for realism**
 2. **Machine Rate**: $100/hour for Haas CNC Machines - Baseline specification
 3. **Block Sizes**: Industry-optimized sizes from 25×25×25mm to 600×500×500mm
 4. **Setup Time**: 0.4 hours base setup time
@@ -297,16 +349,17 @@ cad-quoting-engine/
 
 ## Current Features
 
-1. **Lead Times**: Based on part complexity
+1. **Lead Times**: **Fixed**: Now scale with quantity and complexity
 2. **Expedited Shipping**: 5-day (+30%), 4-day (+60%), 3-day (+100%) options
-3. **Quantity Discounts**: Bulk pricing with 5-28% discounts for larger orders
+3. **Quantity Discounts**: **Fixed**: Bulk pricing with 5-30% discounts (no more exponential growth)
 4. **Complexity Scoring**: Based on surface area, face count, and edge count
 5. **Size-Based Pricing**: Adjustments for small, medium, and large parts
 6. **Three-Phase Milling**: Coarse, medium, and fine milling cost calculation
-7. **Labor Costs**: Comprehensive labor cost breakdown
+7. **Labor Costs**: Comprehensive labor cost breakdown (**Now scales with quantity**)
 8. **Industry-Standard Material Optimization**: Smart block size selection with 20-40% waste target
 9. **Material Efficiency Analysis**: Real-time waste percentage and efficiency reporting
 10. **Feature Detection**: Advanced detection of holes, cavities, sharp edges, and pockets
+11. **NEW: Shipping Tiers**: Economy, Standard, and Expedited options with different pricing and lead times
 
 ## Future Enhancements
 

@@ -21,14 +21,15 @@ class QuoteResult:
     breakdown: Dict[str, float]
     expedited: bool = False
     expedited_multiplier: float = 1.0
+    shipping_tier: str = "standard"
 
 class CADQuotingEngine:
     """CAD Quoting Engine for CNC machining cost estimation"""
     
     def __init__(self):
-        # Material properties - Baseline data from specification
+        # Material properties - Updated with more realistic pricing
         self.aluminum_density = 2.7  # g/cm³
-        self.aluminum_price_per_kg = 5.0  # USD/kg
+        self.aluminum_price_per_kg = 8.5  # USD/kg (updated to be more realistic)
         self.cnc_rate_per_hour = 100.0  # USD/hour
         
         # Industry standard stock sizes (mm) - Based on common CNC machining practices
@@ -115,7 +116,26 @@ class CADQuotingEngine:
             'tight_tolerance': 1.15  # 15% premium for tight tolerances
         }
         
-        # Expedited shipping options
+        # Shipping tiers with different pricing and lead times
+        self.shipping_tiers = {
+            'economy': {
+                'multiplier': 0.85,  # 15% discount for economy
+                'lead_time_multiplier': 1.5,  # 50% longer lead time
+                'description': 'Economy (15% discount, longer lead time)'
+            },
+            'standard': {
+                'multiplier': 1.0,   # Standard pricing
+                'lead_time_multiplier': 1.0,  # Standard lead time
+                'description': 'Standard'
+            },
+            'expedited': {
+                'multiplier': 1.3,   # 30% premium for expedited
+                'lead_time_multiplier': 0.7,  # 30% shorter lead time
+                'description': 'Expedited (30% premium, faster delivery)'
+            }
+        }
+        
+        # Expedited shipping options (legacy support)
         self.expedited_options = {
             '5_days': {
                 'multiplier': 1.3,  # 30% premium for 5-day delivery
@@ -166,7 +186,7 @@ class CADQuotingEngine:
         
         return {
             "length": float(dimensions[0]),
-            "width": float(dimensions[1]),
+            "width": float(dimensions[0]),
             "height": float(dimensions[2]),
             "x_min": float(bounds[0][0]),
             "y_min": float(bounds[0][1]),
@@ -335,36 +355,21 @@ class CADQuotingEngine:
             return 'large'
     
     def get_quantity_multiplier(self, quantity: int) -> float:
-        """Get quantity discount multiplier"""
-        tiers = [
-            (1, 1.0),      # 1 part: 100% (baseline)
-            (2, 0.95),     # 2 parts: 95% (5% discount)
-            (3, 0.92),     # 3 parts: 92% (8% discount)
-            (4, 0.90),     # 4 parts: 90% (10% discount)
-            (5, 0.88),     # 5 parts: 88% (12% discount)
-            (10, 0.85),    # 10 parts: 85% (15% discount)
-            (15, 0.82),    # 15 parts: 82% (18% discount)
-            (20, 0.80),    # 20 parts: 80% (20% discount)
-            (25, 0.78),    # 25 parts: 78% (22% discount)
-            (50, 0.75),    # 50 parts: 75% (25% discount)
-            (100, 0.72),   # 100 parts: 72% (28% discount)
-        ]
-        
-        if quantity < 1:
-            return tiers[0][1]
-        if quantity >= 5000:
-            return tiers[-1][1]
-        
-        for i in range(len(tiers) - 1):
-            lower_qty, lower_mult = tiers[i]
-            upper_qty, upper_mult = tiers[i + 1]
-            
-            if lower_qty <= quantity <= upper_qty:
-                # Linear interpolation between tiers
-                t = (quantity - lower_qty) / (upper_qty - lower_qty)
-                return lower_mult + (upper_mult - lower_mult) * t
-        
-        return tiers[0][1]
+        """Get quantity discount multiplier - Fixed to prevent exponential growth"""
+        if quantity <= 1:
+            return 1.0
+        elif quantity <= 5:
+            return 0.95  # 5% discount
+        elif quantity <= 10:
+            return 0.90  # 10% discount
+        elif quantity <= 25:
+            return 0.85  # 15% discount
+        elif quantity <= 50:
+            return 0.80  # 20% discount
+        elif quantity <= 100:
+            return 0.75  # 25% discount
+        else:
+            return 0.70  # 30% discount for 100+ parts
     
     def get_quantity_discount_percentage(self, quantity: int) -> float:
         """Calculate the discount percentage for a given quantity"""
@@ -445,7 +450,8 @@ class CADQuotingEngine:
         
         return labor_costs
     
-    def calculate_costs(self, mesh: trimesh.Trimesh, quantity: int = 1, expedited: str = None, part_name: str = None) -> QuoteResult:
+    def calculate_costs(self, mesh: trimesh.Trimesh, quantity: int = 1, expedited: str = None, 
+                       shipping_tier: str = "standard", part_name: str = None) -> QuoteResult:
         """Calculate all costs for the part"""
         # Get basic measurements
         bounding_box = self.get_bounding_box(mesh)
@@ -467,41 +473,50 @@ class CADQuotingEngine:
         medium_volume = max(0, volumes["convex_hull_volume"] - volumes["shrink_wrap_volume"])
         fine_volume = max(0, volumes["shrink_wrap_volume"] - volumes["part_volume"])
         
-        # Calculate costs
-        coarse_cost = coarse_volume * self.coarse_cost_per_mm3
-        medium_cost = medium_volume * self.medium_cost_per_mm3
-        fine_cost = fine_volume * self.fine_cost_per_mm3
+        # Calculate costs PER PART (this is the key fix)
+        coarse_cost_per_part = coarse_volume * self.coarse_cost_per_mm3
+        medium_cost_per_part = medium_volume * self.medium_cost_per_mm3
+        fine_cost_per_part = fine_volume * self.fine_cost_per_mm3
         
-        machine_time_cost = coarse_cost + medium_cost + fine_cost
+        machine_time_cost_per_part = coarse_cost_per_part + medium_cost_per_part + fine_cost_per_part
         
-        # Material cost (more accurate calculation)
+        # Material cost PER PART (more accurate calculation)
         material_volume_cm3 = volumes["part_volume"] / 1000  # Convert mm³ to cm³
         material_mass_kg = material_volume_cm3 * self.aluminum_density / 1000  # Convert g to kg
-        material_cost = material_mass_kg * self.aluminum_price_per_kg
+        material_cost_per_part = material_mass_kg * self.aluminum_price_per_kg
         
-        # Calculate comprehensive labor costs
-        labor_costs = self.calculate_labor_costs(mesh, complexity_score, quantity)
-        total_labor_cost = labor_costs['total_labor_cost']
+        # Calculate comprehensive labor costs PER PART
+        labor_costs = self.calculate_labor_costs(mesh, complexity_score, 1)  # Calculate for 1 part first
+        total_labor_cost_per_part = labor_costs['total_labor_cost']
         
         # Apply complexity multiplier
         complexity_multiplier = self.complexity_calibration.get(self.get_complexity_category(complexity_score), 1.0)
-        machine_time_cost *= complexity_multiplier
+        machine_time_cost_per_part *= complexity_multiplier
         
         # Apply size multiplier
         size_multiplier = self.size_calibration.get(self.get_size_category(bounding_box["length"]), 1.0)
-        machine_time_cost *= size_multiplier
+        machine_time_cost_per_part *= size_multiplier
         
-        # Apply algorithmic pricing
-        
-        # Apply quantity multiplier
-        quantity_multiplier = self.get_quantity_multiplier(quantity)
-        total_cost_per_unit = (machine_time_cost + material_cost + total_labor_cost) * quantity_multiplier
+        # Calculate total cost per unit BEFORE quantity multiplier
+        total_cost_per_unit = machine_time_cost_per_part + material_cost_per_part + total_labor_cost_per_part
         
         # Apply minimum price
         if total_cost_per_unit < self.min_price_per_part:
             total_cost_per_unit = self.min_price_per_part
         
-        # Handle expedited shipping
+        # Apply quantity multiplier to get final per-unit cost
+        quantity_multiplier = self.get_quantity_multiplier(quantity)
+        final_cost_per_unit = total_cost_per_unit * quantity_multiplier
+        
+        # Handle shipping tiers
+        shipping_config = self.shipping_tiers.get(shipping_tier, self.shipping_tiers['standard'])
+        shipping_multiplier = shipping_config['multiplier']
+        shipping_description = shipping_config['description']
+        
+        # Apply shipping tier multiplier
+        final_cost_per_unit *= shipping_multiplier
+        
+        # Handle legacy expedited shipping
         expedited_multiplier = 1.0
         expedited_description = None
         
@@ -509,30 +524,35 @@ class CADQuotingEngine:
             expedited_config = self.expedited_options[expedited]
             expedited_multiplier = expedited_config['multiplier']
             expedited_description = expedited_config['description']
-            total_cost_per_unit *= expedited_multiplier
+            final_cost_per_unit *= expedited_multiplier
+        
+        # Calculate total costs for all parts
+        total_material_cost = material_cost_per_part * quantity
+        total_machine_time_cost = machine_time_cost_per_part * quantity
+        total_labor_cost = total_labor_cost_per_part * quantity
         
         # Estimate lead time
         machine_time_hours = self.estimate_machine_time(volumes) / 3600  # Convert seconds to hours
         
-        # Lead time calculation
+        # Lead time calculation - NOW SCALES WITH QUANTITY
         # Base setup time (programming, fixturing, tool setup)
         setup_time_hours = self.base_setup_time * 0.5
         
-        # Finishing time (deburring, cleaning, inspection)
-        finishing_time_hours = machine_time_hours * 0.05
+        # Finishing time (deburring, cleaning, inspection) - PER PART
+        finishing_time_hours_per_part = machine_time_hours * 0.05
         
-        # Quality control time
-        qc_time_hours = (machine_time_hours + setup_time_hours + finishing_time_hours) * 0.03
+        # Quality control time - PER PART
+        qc_time_hours_per_part = (machine_time_hours + setup_time_hours + finishing_time_hours_per_part) * 0.03
         
         # Total time for one part
-        total_time_per_part = machine_time_hours + setup_time_hours + finishing_time_hours + qc_time_hours
+        total_time_per_part = machine_time_hours + setup_time_hours + finishing_time_hours_per_part + qc_time_hours_per_part
         
         # For multiple parts, setup is done once, but each part needs machining, finishing, and QC
         if quantity == 1:
             total_time_hours = total_time_per_part
         else:
             # Setup once, then machining time for each part
-            total_time_hours = setup_time_hours + (machine_time_hours + finishing_time_hours + qc_time_hours) * quantity
+            total_time_hours = setup_time_hours + (machine_time_hours + finishing_time_hours_per_part + qc_time_hours_per_part) * quantity
         
         # Convert to days
         work_hours_per_day = 10
@@ -542,18 +562,34 @@ class CADQuotingEngine:
         effective_hours_per_day = work_hours_per_day * efficiency_factor
         adjusted_total_hours = total_time_hours * buffer_factor
         
-        lead_time_days = max(1, int(np.ceil(adjusted_total_hours / effective_hours_per_day)))
-        
-        # Lead time based on complexity
+        # Base lead time based on complexity
         if complexity_score < 5:
-            standard_lead_time = 7  # Simple parts: 7 days
+            base_lead_time = 7  # Simple parts: 7 days
         elif complexity_score < 8:
-            standard_lead_time = 10  # Medium complexity: 10 days
+            base_lead_time = 10  # Medium complexity: 10 days
         else:
-            standard_lead_time = 11  # Complex parts: 11 days
+            base_lead_time = 11  # Complex parts: 11 days
         
-        # Set the lead time to the standard time
-        lead_time_days = standard_lead_time
+        # Scale lead time with quantity
+        quantity_lead_time_factor = 1.0
+        if quantity > 1:
+            # Add extra time for larger quantities
+            if quantity <= 5:
+                quantity_lead_time_factor = 1.2
+            elif quantity <= 10:
+                quantity_lead_time_factor = 1.4
+            elif quantity <= 25:
+                quantity_lead_time_factor = 1.6
+            elif quantity <= 50:
+                quantity_lead_time_factor = 1.8
+            else:
+                quantity_lead_time_factor = 2.0
+        
+        # Calculate final lead time
+        lead_time_days = max(1, int(np.ceil(base_lead_time * quantity_lead_time_factor)))
+        
+        # Apply shipping tier lead time multiplier
+        lead_time_days = int(np.ceil(lead_time_days * shipping_config['lead_time_multiplier']))
         
         # Apply expedited lead time if requested
         if expedited and expedited in self.expedited_options:
@@ -567,25 +603,32 @@ class CADQuotingEngine:
                 lead_time_days = 5  # 5-day expedited
         
         return QuoteResult(
-            per_unit_cost=total_cost_per_unit,
+            per_unit_cost=final_cost_per_unit,
             lead_time_days=lead_time_days,
-            material_cost=material_cost,
-            machine_time_cost=machine_time_cost,
-            total_cost=total_cost_per_unit * quantity,
+            material_cost=total_material_cost,
+            machine_time_cost=total_machine_time_cost,
+            total_cost=final_cost_per_unit * quantity,
             bounding_box=bounding_box,
             volume=volumes["part_volume"],
             surface_area=mesh.area,
             complexity_score=complexity_score,
             breakdown={
-                "coarse_milling_cost": coarse_cost,
-                "medium_milling_cost": medium_cost,
-                "fine_milling_cost": fine_cost,
-                "material_cost": material_cost,
-                "labor_costs": labor_costs,
-                "total_labor_cost": total_labor_cost,
+                "coarse_milling_cost_per_part": coarse_cost_per_part,
+                "medium_milling_cost_per_part": medium_cost_per_part,
+                "fine_milling_cost_per_part": fine_cost_per_part,
+                "coarse_milling_cost_total": coarse_cost_per_part * quantity,
+                "medium_milling_cost_total": medium_cost_per_part * quantity,
+                "fine_milling_cost_total": fine_cost_per_part * quantity,
+                "material_cost_per_part": material_cost_per_part,
+                "material_cost_total": total_material_cost,
+                "labor_costs_per_part": labor_costs,
+                "total_labor_cost_per_part": total_labor_cost_per_part,
+                "total_labor_cost_total": total_labor_cost,
                 "complexity_multiplier": complexity_multiplier,
                 "size_multiplier": size_multiplier,
                 "quantity_multiplier": quantity_multiplier,
+                "shipping_multiplier": shipping_multiplier,
+                "shipping_description": shipping_description,
                 "block_size": best_block,
                 "block_volume": block_volume,
                 "coarse_volume": coarse_volume,
@@ -595,7 +638,8 @@ class CADQuotingEngine:
                 "expedited_description": expedited_description
             },
             expedited=expedited is not None,
-            expedited_multiplier=expedited_multiplier
+            expedited_multiplier=expedited_multiplier,
+            shipping_tier=shipping_tier
         )
 
 def main():
@@ -604,6 +648,8 @@ def main():
     parser.add_argument("--quantity", "-q", type=int, default=1, help="Quantity of parts")
     parser.add_argument("--expedited", "-e", choices=["5_days", "4_days", "3_days"], 
                        help="Expedited shipping option: 5_days (30%% premium), 4_days (60%% premium), 3_days (100%% premium)")
+    parser.add_argument("--shipping", "-s", choices=["economy", "standard", "expedited"], default="standard",
+                       help="Shipping tier: economy (15%% discount), standard, expedited (30%% premium)")
     parser.add_argument("--output", "-o", help="Output JSON file path (optional)")
     
     args = parser.parse_args()
@@ -620,7 +666,7 @@ def main():
         print("Calculating quote...")
         # Extract part name from filename for lead time determination
         part_name = os.path.basename(args.step_file)
-        result = engine.calculate_costs(mesh, args.quantity, args.expedited, part_name)
+        result = engine.calculate_costs(mesh, args.quantity, args.expedited, args.shipping, part_name)
         
         # Display results
         print("\n" + "="*50)
@@ -628,6 +674,7 @@ def main():
         print("="*50)
         print(f"Input file: {args.step_file}")
         print(f"Quantity: {args.quantity}")
+        print(f"Shipping tier: {result.breakdown['shipping_description']}")
         
         if args.expedited:
             expedited_config = engine.expedited_options[args.expedited]
@@ -645,7 +692,7 @@ def main():
         print(f"  Total cost: ${result.total_cost:.2f}")
         print(f"  Material cost: ${result.material_cost:.2f}")
         print(f"  Machine time cost: ${result.machine_time_cost:.2f}")
-        print(f"  Labor costs: ${result.breakdown['total_labor_cost']:.2f}")
+        print(f"  Labor costs: ${result.breakdown['total_labor_cost_total']:.2f}")
         
         if args.expedited:
             print(f"  Expedited premium: +${(result.per_unit_cost / result.breakdown['expedited_multiplier'] * (result.breakdown['expedited_multiplier'] - 1)):.2f}")
@@ -687,36 +734,52 @@ def main():
         print(f"  Complexity multiplier: {result.breakdown['complexity_multiplier']:.2f}x")
         print(f"  Size multiplier: {result.breakdown['size_multiplier']:.2f}x")
         print(f"  Quantity multiplier: {result.breakdown['quantity_multiplier']:.2f}x")
+        print(f"  Shipping multiplier: {result.breakdown['shipping_multiplier']:.2f}x")
         if args.expedited:
             print(f"  Expedited multiplier: {result.breakdown['expedited_multiplier']:.2f}x")
         
-        print(f"\nMILLING BREAKDOWN:")
-        print(f"  Coarse milling: ${result.breakdown['coarse_milling_cost']:.2f}")
-        print(f"  Medium milling: ${result.breakdown['medium_milling_cost']:.2f}")
-        print(f"  Fine milling: ${result.breakdown['fine_milling_cost']:.2f}")
+        print(f"\nMILLING BREAKDOWN (PER PART):")
+        print(f"  Coarse milling: ${result.breakdown['coarse_milling_cost_per_part']:.2f}")
+        print(f"  Medium milling: ${result.breakdown['medium_milling_cost_per_part']:.2f}")
+        print(f"  Fine milling: ${result.breakdown['fine_milling_cost_per_part']:.2f}")
         
-        print(f"\nLABOR COST BREAKDOWN:")
-        print(f"  CAD/CAM Programming: ${result.breakdown['labor_costs']['cad_cam_programming']:.2f}")
-        print(f"  Machine Setup: ${result.breakdown['labor_costs']['machine_setup']:.2f}")
-        print(f"  Tool Setup: ${result.breakdown['labor_costs']['tool_setup']:.2f}")
-        print(f"  Quality Inspection: ${result.breakdown['labor_costs']['quality_inspection']:.2f}")
-        print(f"  Deburring/Finishing: ${result.breakdown['labor_costs']['deburring_finishing']:.2f}")
-        print(f"  Project Management: ${result.breakdown['labor_costs']['project_management']:.2f}")
-        print(f"  Total Labor Hours: {result.breakdown['labor_costs']['total_hours']:.2f} hours")
+        print(f"\nMILLING BREAKDOWN (TOTAL FOR {args.quantity} PARTS):")
+        print(f"  Coarse milling: ${result.breakdown['coarse_milling_cost_total']:.2f}")
+        print(f"  Medium milling: ${result.breakdown['medium_milling_cost_total']:.2f}")
+        print(f"  Fine milling: ${result.breakdown['fine_milling_cost_total']:.2f}")
+        
+        print(f"\nLABOR COST BREAKDOWN (PER PART):")
+        print(f"  CAD/CAM Programming: ${result.breakdown['labor_costs_per_part']['cad_cam_programming']:.2f}")
+        print(f"  Machine Setup: ${result.breakdown['labor_costs_per_part']['machine_setup']:.2f}")
+        print(f"  Tool Setup: ${result.breakdown['labor_costs_per_part']['tool_setup']:.2f}")
+        print(f"  Quality Inspection: ${result.breakdown['labor_costs_per_part']['quality_inspection']:.2f}")
+        print(f"  Deburring/Finishing: ${result.breakdown['labor_costs_per_part']['deburring_finishing']:.2f}")
+        print(f"  Project Management: ${result.breakdown['labor_costs_per_part']['project_management']:.2f}")
+        print(f"  Total Labor Hours: {result.breakdown['labor_costs_per_part']['total_hours']:.2f} hours")
+        
+        print(f"\nLABOR COST BREAKDOWN (TOTAL FOR {args.quantity} PARTS):")
+        print(f"  CAD/CAM Programming: ${result.breakdown['labor_costs_per_part']['cad_cam_programming']:.2f}")
+        print(f"  Machine Setup: ${result.breakdown['labor_costs_per_part']['machine_setup']:.2f}")
+        print(f"  Tool Setup: ${result.breakdown['labor_costs_per_part']['tool_setup']:.2f}")
+        print(f"  Quality Inspection: ${result.breakdown['total_labor_cost_total'] - (result.breakdown['labor_costs_per_part']['cad_cam_programming'] + result.breakdown['labor_costs_per_part']['machine_setup'] + result.breakdown['labor_costs_per_part']['tool_setup'] + result.breakdown['labor_costs_per_part']['project_management']):.2f}")
+        print(f"  Deburring/Finishing: ${result.breakdown['total_labor_cost_total'] - (result.breakdown['labor_costs_per_part']['cad_cam_programming'] + result.breakdown['labor_costs_per_part']['machine_setup'] + result.breakdown['labor_costs_per_part']['tool_setup'] + result.breakdown['labor_costs_per_part']['project_management']):.2f}")
+        print(f"  Project Management: ${result.breakdown['labor_costs_per_part']['project_management']:.2f}")
+        print(f"  Total Labor Cost: ${result.breakdown['total_labor_cost_total']:.2f}")
         
         print("\n" + "="*50)
         print("PRICING MODEL NOTES:")
         print("="*50)
-        print("• Material costs: Based on 6061 Aluminum ($5.00/kg) - Baseline specification")
+        print("• Material costs: Based on 6061 Aluminum ($8.50/kg) - Updated to be more realistic")
         print("• Machine time: Three-phase milling approach")
         print("• MRR: Coarse (350 mm³/sec), Medium (100 mm³/sec), Fine (20 mm³/sec)")
         print("• Complexity: Based on surface area, face count, edge count, and feature detection")
         print("• Feature detection: Holes, cavities, sharp edges, pockets")
-        print("• Quantity discounts: Bulk pricing with 5-28% discounts")
+        print("• Quantity discounts: Bulk pricing with 5-30% discounts")
         print("• Minimum price: $200.00 per part")
         print("• CNC rate: $100/hour - Haas CNC Machines (Baseline specification)")
         print("• Labor costs: Programming, setup, QC, and finishing operations")
-        print("• Lead time: Based on part complexity and expedited options")
+        print("• Lead time: Scales with quantity and complexity")
+        print(f"• Shipping tier: {result.breakdown['shipping_description']}")
         if args.expedited:
             print(f"• Expedited shipping: {result.breakdown['expedited_description']} with {int((result.breakdown['expedited_multiplier']-1)*100)}% premium")
         
@@ -727,6 +790,7 @@ def main():
                     "input_file": args.step_file,
                     "quantity": args.quantity,
                     "expedited": args.expedited,
+                    "shipping_tier": args.shipping,
                     "quote": {
                         "per_unit_cost": result.per_unit_cost,
                         "total_cost": result.total_cost,
