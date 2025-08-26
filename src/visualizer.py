@@ -774,34 +774,34 @@ def main():
     
     # 1. Cost breakdown chart
     fig1 = visualizer.create_cost_breakdown_chart(sample_quote, 'outputs/cost_breakdown.png')
-    print("✓ Cost breakdown chart saved to outputs/cost_breakdown.png")
+    print("Cost breakdown chart saved to outputs/cost_breakdown.png")
     
     # 2. Complexity analysis chart
     fig2 = visualizer.create_complexity_analysis_chart(sample_quote, 'outputs/complexity_analysis.png')
-    print("✓ Complexity analysis chart saved to outputs/complexity_analysis.png")
+    print("Complexity analysis chart saved to outputs/complexity_analysis.png")
     
     # 3. Pricing comparison chart
     fig3 = visualizer.create_pricing_comparison_chart(sample_quote, 'outputs/pricing_comparison.png')
-    print("✓ Pricing comparison chart saved to outputs/pricing_comparison.png")
+    print("Pricing comparison chart saved to outputs/pricing_comparison.png")
     
-    # 4. Feature analysis chart (NEW!)
+    # 4. Feature analysis chart
     fig4 = visualizer.create_feature_analysis_chart(sample_quote, 'outputs/feature_analysis.png')
-    print("✓ Feature analysis chart saved to outputs/feature_analysis.png")
+    print("Feature analysis chart saved to outputs/feature_analysis.png")
     
-    # 5. Manufacturing workflow chart (NEW!)
+    # 5. Manufacturing workflow chart
     fig5 = visualizer.create_manufacturing_workflow_chart(sample_quote, 'outputs/manufacturing_workflow.png')
-    print("✓ Manufacturing workflow chart saved to outputs/manufacturing_workflow.png")
+    print("Manufacturing workflow chart saved to outputs/manufacturing_workflow.png")
     
     # 6. Interactive dashboard
     dashboard_html = visualizer.create_interactive_dashboard(sample_quote, 'outputs/interactive_dashboard.html')
-    print("✓ Interactive dashboard saved to outputs/interactive_dashboard.html")
+    print("Interactive dashboard saved to outputs/interactive_dashboard.html")
     
     # 7. Summary report
     report_html = visualizer.create_summary_report(sample_quote, 'outputs/summary_report.html')
-    print("✓ Summary report saved to outputs/summary_report.html")
+    print("Summary report saved to outputs/summary_report.html")
     
-    print("\n🎉 All visualizations generated successfully!")
-    print("📁 Check the 'outputs' folder for all generated files.")
+    print("\nAll visualizations generated successfully!")
+    print("Check the 'outputs' folder for all generated files.")
 
 if __name__ == "__main__":
     main()

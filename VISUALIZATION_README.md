@@ -1,8 +1,8 @@
-# 🎨 CAD Quoting Engine - Visualization Tools
+# CAD Quoting Engine - Visualization Tools
 
 Transform your CAD quoting results into professional, interactive visualizations that showcase the transformation from 3D CAD files to detailed cost estimates.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Install Visualization Dependencies
 ```bash
@@ -23,44 +23,44 @@ python src/quote_with_visualizations.py data/suspension-mount.step
 python src/quote_with_visualizations.py --batch data/*.step
 ```
 
-## 📊 Visualization Types
+## Visualization Types
 
-### 1. **Cost Breakdown Charts** 📈
+### 1. **Cost Breakdown Charts**
 - **Pie Chart**: Visual representation of cost components (Material, Machine Time, Labor, Overhead)
 - **Bar Chart**: Side-by-side comparison of cost breakdowns
 - **Features**: Color-coded components, percentage labels, value annotations
 
-### 2. **Complexity Analysis** 🎯
+### 2. **Complexity Analysis**
 - **Complexity Gauge**: 0-10 scale with visual meter
 - **Part Dimensions**: 3D-like representation of part geometry
 - **Volume vs Surface Area**: Scatter plot showing geometric relationships
 - **Material Efficiency**: Waste percentage and optimization analysis
 
-### 3. **Pricing Comparison** 💰
+### 3. **Pricing Comparison**
 - **Per-Unit vs Total Cost**: Quantity-based cost analysis
 - **Lead Time Analysis**: Shipping tier impact on delivery
 - **Cost Efficiency**: Cost per mm³ analysis with industry benchmarks
 - **Quantity Discounts**: Visual representation of bulk pricing
 
-### 4. **Interactive Dashboards** 🖥️
+### 4. **Interactive Dashboards**
 - **Plotly-based**: Zoomable, hoverable charts
 - **Multi-panel Layout**: 6 different chart types in one view
 - **Responsive Design**: Works on desktop and mobile
 - **Export Options**: Save as HTML for web sharing
 
-### 5. **Professional Reports** 📋
+### 5. **Professional Reports**
 - **HTML Format**: Styled, presentation-ready reports
 - **Key Metrics**: Highlighted cost and complexity information
 - **Feature Analysis**: Detailed breakdown of detected features
 - **Material Analysis**: Waste percentage and optimization data
 
-### 6. **Batch Analysis** 📈
+### 6. **Batch Analysis**
 - **Multi-Part Comparison**: Side-by-side analysis across parts
 - **Cost Trends**: Visual patterns in pricing
 - **Complexity Distribution**: Range and distribution of complexity scores
 - **Volume Relationships**: Cost vs volume correlations
 
-## 🛠️ Usage Examples
+## Usage Examples
 
 ### Basic Visualization Generation
 ```python
@@ -108,7 +108,7 @@ step_files = ['data/part1.step', 'data/part2.step', 'data/part3.step']
 run_batch_analysis(step_files, quantity=5, shipping='standard')
 ```
 
-## 📁 Output Structure
+## Output Structure
 
 ```
 outputs/
@@ -136,7 +136,7 @@ outputs/
     └── batch_results.json
 ```
 
-## 🎨 Customization Options
+## Customization Options
 
 ### Color Schemes
 ```python
@@ -171,7 +171,7 @@ fig.write_html('dashboard.html')
 report_html = visualizer.create_summary_report(quote_data)
 ```
 
-## 🔧 Technical Features
+## Technical Features
 
 ### **Static Charts (Matplotlib/Seaborn)**
 - **High Resolution**: 300 DPI output for professional printing
@@ -191,7 +191,7 @@ report_html = visualizer.create_summary_report(quote_data)
 - **Embedded Charts**: Charts integrated into reports
 - **Cross-Platform**: Works in all modern browsers
 
-## 📊 Sample Data Structure
+## Sample Data Structure
 
 The visualizer expects quote data in this format:
 ```python
@@ -216,7 +216,7 @@ quote_data = {
 }
 ```
 
-## 🎯 Use Cases
+## Use Cases
 
 ### **Sales & Marketing**
 - **Client Presentations**: Professional cost breakdowns
@@ -238,7 +238,7 @@ quote_data = {
 - **Material Optimization**: Waste percentage analysis
 - **Efficiency Metrics**: Cost per volume analysis
 
-## 🚀 Advanced Features
+## Advanced Features
 
 ### **Batch Processing**
 ```bash
@@ -277,7 +277,7 @@ quote_data = {
 visualizer.create_summary_report(quote_data, 'my_report.html')
 ```
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### **Common Issues**
 
@@ -308,7 +308,7 @@ fig.savefig('output.png', dpi=150)  # Faster rendering
 fig.update_layout(showlegend=False, height=600)
 ```
 
-## 📚 API Reference
+## API Reference
 
 ### **CADVisualizer Class**
 
@@ -330,7 +330,7 @@ fig.update_layout(showlegend=False, height=600)
 - **Interactive Dashboards**: HTML string or saved file
 - **Reports**: HTML string or saved file
 
-## 🌟 Future Enhancements
+## Future Enhancements
 
 ### **Planned Features**
 - **3D Part Visualization**: Interactive 3D part models
@@ -345,7 +345,7 @@ fig.update_layout(showlegend=False, height=600)
 - **Multi-language Support**: Internationalization
 - **Export Formats**: Excel, PowerPoint, PDF
 
-## 📞 Support & Contributing
+## Support & Contributing
 
 ### **Getting Help**
 1. Check the troubleshooting section above
@@ -366,4 +366,4 @@ fig.update_layout(showlegend=False, height=600)
 
 ---
 
-**🎨 Transform your CAD quotes into compelling visual stories with the CAD Quoting Engine Visualization Tools!**
+**Transform your CAD quotes into compelling visual stories with the CAD Quoting Engine Visualization Tools!**

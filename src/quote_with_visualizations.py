@@ -30,7 +30,7 @@ def run_quote_with_visualizations(step_file_path: str, quantity: int = 1,
         generate_visualizations: Whether to generate visualizations
     """
     
-    print(f"🏭 CAD Quoting Engine with Visualizations")
+    print(f"CAD Quoting Engine with Visualizations")
     print("=" * 50)
     
     # Initialize the quoting engine
@@ -39,14 +39,14 @@ def run_quote_with_visualizations(step_file_path: str, quantity: int = 1,
     # Get the part name from the file path
     part_name = Path(step_file_path).stem
     
-    print(f"📁 Processing: {part_name}")
-    print(f"📊 Quantity: {quantity}")
-    print(f"🚚 Shipping: {shipping}")
+    print(f"Processing: {part_name}")
+    print(f"Quantity: {quantity}")
+    print(f"Shipping: {shipping}")
     print()
     
     try:
         # Generate the quote
-        print("🔄 Analyzing 3D geometry and calculating costs...")
+        print("Analyzing 3D geometry and calculating costs...")
         mesh = engine.load_step_file(step_file_path)
         quote_result = engine.calculate_costs(
             mesh, 
@@ -84,23 +84,23 @@ def run_quote_with_visualizations(step_file_path: str, quantity: int = 1,
             quote_data['quantity_discount_percentage'] = discount_percentage
         
         # Display quote summary
-        print("✅ Quote Generated Successfully!")
-        print(f"💰 Per Unit Cost: ${quote_data['per_unit_cost']:.2f}")
-        print(f"💰 Total Cost: ${quote_data['total_cost']:.2f}")
-        print(f"⏰ Lead Time: {quote_data['lead_time_days']} days")
-        print(f"🎯 Complexity Score: {quote_data['complexity_score']:.1f}/10")
+        print("Quote Generated Successfully!")
+        print(f"Per Unit Cost: ${quote_data['per_unit_cost']:.2f}")
+        print(f"Total Cost: ${quote_data['total_cost']:.2f}")
+        print(f"Lead Time: {quote_data['lead_time_days']} days")
+        print(f"Complexity Score: {quote_data['complexity_score']:.1f}/10")
         print()
         
         # Save to JSON if requested
         if output_file:
             with open(output_file, 'w') as f:
                 json.dump(quote_data, f, indent=2)
-            print(f"💾 Quote saved to: {output_file}")
+            print(f"Quote saved to: {output_file}")
             print()
         
         # Generate visualizations if requested
         if generate_visualizations:
-            print("🎨 Generating Visualizations...")
+            print("Generating Visualizations...")
             visualizer = CADVisualizer()
             
             # Create output directory
@@ -108,31 +108,31 @@ def run_quote_with_visualizations(step_file_path: str, quantity: int = 1,
             os.makedirs(output_dir, exist_ok=True)
             
             # Generate all visualization types
-            print("  📊 Creating cost breakdown chart...")
+            print("  Creating cost breakdown chart...")
             visualizer.create_cost_breakdown_chart(
                 quote_data, 
                 f"{output_dir}/cost_breakdown.png"
             )
             
-            print("  🎯 Creating complexity analysis chart...")
+            print("  Creating complexity analysis chart...")
             visualizer.create_complexity_analysis_chart(
                 quote_data, 
                 f"{output_dir}/complexity_analysis.png"
             )
             
-            print("  💰 Creating pricing comparison chart...")
+            print("  Creating pricing comparison chart...")
             visualizer.create_pricing_comparison_chart(
                 quote_data, 
                 f"{output_dir}/pricing_comparison.png"
             )
             
-            print("  🔍 Creating feature analysis chart...")
+            print("  Creating feature analysis chart...")
             visualizer.create_feature_analysis_chart(
                 quote_data, 
                 f"{output_dir}/feature_analysis.png"
             )
             
-            print("  ⚙️  Creating manufacturing workflow chart...")
+            print("  Creating manufacturing workflow chart...")
             visualizer.create_manufacturing_workflow_chart(
                 quote_data, 
                 f"{output_dir}/manufacturing_workflow.png"
@@ -140,40 +140,40 @@ def run_quote_with_visualizations(step_file_path: str, quantity: int = 1,
             
             # Try to create 3D visualization if mesh is available
             try:
-                print("  🎨 Creating 3D part visualization...")
+                print("  Creating 3D part visualization...")
                 mesh = engine.load_step_file(step_file_path)
                 visualizer.create_3d_part_visualization(mesh, f"{output_dir}/3d_visualization.png")
-                print("    ✓ 3D visualization created successfully")
+                print("    3D visualization created successfully")
             except Exception as e:
-                print(f"    ⚠️  3D visualization skipped: {e}")
+                print(f"    3D visualization skipped: {e}")
             
-            print("  🖥️  Creating interactive dashboard...")
+            print("  Creating interactive dashboard...")
             visualizer.create_interactive_dashboard(
                 quote_data, 
                 f"{output_dir}/interactive_dashboard.html"
             )
             
-            print("  📋 Creating summary report...")
+            print("  Creating summary report...")
             visualizer.create_summary_report(
                 quote_data, 
                 f"{output_dir}/summary_report.html"
             )
             
-            print(f"\n✅ All visualizations saved to: {output_dir}/")
-            print("📁 Files generated:")
-            print("   • cost_breakdown.png - Cost breakdown charts")
-            print("   • complexity_analysis.png - Complexity and geometry analysis")
-            print("   • pricing_comparison.png - Pricing and efficiency analysis")
-            print("   • feature_analysis.png - Feature complexity and cost impact analysis")
-            print("   • manufacturing_workflow.png - Manufacturing timeline and workflow")
-            print("   • 3d_visualization.png - 3D part visualization with bounding box")
-            print("   • interactive_dashboard.html - Interactive Plotly dashboard")
-            print("   • summary_report.html - Professional HTML report")
+            print(f"\nAll visualizations saved to: {output_dir}/")
+            print("Files generated:")
+            print("   - cost_breakdown.png - Cost breakdown charts")
+            print("   - complexity_analysis.png - Complexity and geometry analysis")
+            print("   - pricing_comparison.png - Pricing and efficiency analysis")
+            print("   - feature_analysis.png - Feature complexity and cost impact analysis")
+            print("   - manufacturing_workflow.png - Manufacturing timeline and workflow")
+            print("   - 3d_visualization.png - 3D part visualization with bounding box")
+            print("   - interactive_dashboard.html - Interactive Plotly dashboard")
+            print("   - summary_report.html - Professional HTML report")
         
         return quote_data
         
     except Exception as e:
-        print(f"❌ Error generating quote: {e}")
+        print(f"Error generating quote: {e}")
         import traceback
         traceback.print_exc()
         return None
@@ -188,13 +188,13 @@ def run_batch_analysis(step_files: list, quantity: int = 1, shipping: str = 'sta
         shipping: Shipping tier
     """
     
-    print(f"📈 Batch Analysis - {len(step_files)} Parts")
+    print(f"Batch Analysis - {len(step_files)} Parts")
     print("=" * 50)
     
     all_quotes = []
     
     for i, step_file in enumerate(step_files, 1):
-        print(f"\n📁 Processing {i}/{len(step_files)}: {Path(step_file).stem}")
+        print(f"\nProcessing {i}/{len(step_files)}: {Path(step_file).stem}")
         
         quote_data = run_quote_with_visualizations(
             step_file, 
@@ -207,7 +207,7 @@ def run_batch_analysis(step_files: list, quantity: int = 1, shipping: str = 'sta
             all_quotes.append(quote_data)
     
     if all_quotes:
-        print(f"\n🎨 Generating Batch Visualizations...")
+        print(f"\nGenerating Batch Visualizations...")
         visualizer = CADVisualizer()
         
         # Create batch output directory
@@ -215,7 +215,7 @@ def run_batch_analysis(step_files: list, quantity: int = 1, shipping: str = 'sta
         os.makedirs(batch_dir, exist_ok=True)
         
         # Generate batch comparison chart
-        print("  📊 Creating batch comparison chart...")
+        print("  Creating batch comparison chart...")
         visualizer.create_batch_analysis_chart(
             all_quotes, 
             f"{batch_dir}/batch_comparison.png"
@@ -227,7 +227,7 @@ def run_batch_analysis(step_files: list, quantity: int = 1, shipping: str = 'sta
             part_dir = f"{batch_dir}/{part_name}"
             os.makedirs(part_dir, exist_ok=True)
             
-            print(f"  🎨 Creating visualizations for {quote_data['part_name']}...")
+            print(f"  Creating visualizations for {quote_data['part_name']}...")
             
             visualizer.create_cost_breakdown_chart(
                 quote_data, 
@@ -244,13 +244,13 @@ def run_batch_analysis(step_files: list, quantity: int = 1, shipping: str = 'sta
                 f"{part_dir}/summary_report.html"
             )
         
-        print(f"\n✅ Batch analysis completed! Check: {batch_dir}/")
+        print(f"\nBatch analysis completed! Check: {batch_dir}/")
         
         # Save batch results to JSON
         batch_file = f"{batch_dir}/batch_results.json"
         with open(batch_file, 'w') as f:
             json.dump(all_quotes, f, indent=2)
-        print(f"💾 Batch results saved to: {batch_file}")
+        print(f"Batch results saved to: {batch_file}")
 
 def main():
     """Main function with command line interface"""
@@ -289,7 +289,7 @@ Examples:
     if args.batch:
         # Batch processing mode
         if not args.batch:
-            print("❌ Error: No STEP files specified for batch processing")
+            print("Error: No STEP files specified for batch processing")
             return
         
         # Expand glob patterns
@@ -302,16 +302,16 @@ Examples:
                 step_files.append(pattern)
         
         if not step_files:
-            print("❌ Error: No STEP files found matching the patterns")
+            print("Error: No STEP files found matching the patterns")
             return
         
-        print(f"🔍 Found {len(step_files)} STEP files for batch processing")
+        print(f"Found {len(step_files)} STEP files for batch processing")
         run_batch_analysis(step_files, args.quantity, args.shipping)
         
     elif args.step_file:
         # Single file processing mode
         if not os.path.exists(args.step_file):
-            print(f"❌ Error: STEP file not found: {args.step_file}")
+            print(f"Error: STEP file not found: {args.step_file}")
             return
         
         run_quote_with_visualizations(
@@ -323,7 +323,7 @@ Examples:
         )
         
     else:
-        print("❌ Error: Please specify a STEP file or use --batch for multiple files")
+        print("Error: Please specify a STEP file or use --batch for multiple files")
         parser.print_help()
 
 if __name__ == "__main__":

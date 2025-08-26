@@ -116,7 +116,7 @@ def create_sample_data():
 
 def demo_individual_visualizations():
     """Demonstrate individual visualization components"""
-    print("🎨 Generating Individual Visualizations...")
+    print("Generating Individual Visualizations...")
     
     visualizer = CADVisualizer()
     sample_data = create_sample_data()
@@ -128,25 +128,25 @@ def demo_individual_visualizations():
     part = sample_data[0]
     
     # 1. Cost Breakdown Chart
-    print("  📊 Creating cost breakdown chart...")
+    print("  Creating cost breakdown chart...")
     fig1 = visualizer.create_cost_breakdown_chart(part, 'outputs/individual/cost_breakdown.png')
-    print("    ✓ Saved: outputs/individual/cost_breakdown.png")
+    print("    Saved: outputs/individual/cost_breakdown.png")
     
     # 2. Complexity Analysis Chart
-    print("  🎯 Creating complexity analysis chart...")
+    print("  Creating complexity analysis chart...")
     fig2 = visualizer.create_complexity_analysis_chart(part, 'outputs/individual/complexity_analysis.png')
-    print("    ✓ Saved: outputs/individual/complexity_analysis.png")
+    print("    Saved: outputs/individual/complexity_analysis.png")
     
     # 3. Pricing Comparison Chart
-    print("  💰 Creating pricing comparison chart...")
+    print("  Creating pricing comparison chart...")
     fig3 = visualizer.create_pricing_comparison_chart(part, 'outputs/individual/pricing_comparison.png')
-    print("    ✓ Saved: outputs/individual/pricing_comparison.png")
+    print("    Saved: outputs/individual/pricing_comparison.png")
     
-    print("  ✅ Individual visualizations completed!")
+    print("  Individual visualizations completed!")
 
 def demo_batch_analysis():
     """Demonstrate batch analysis capabilities"""
-    print("\n📈 Generating Batch Analysis...")
+    print("\nGenerating Batch Analysis...")
     
     visualizer = CADVisualizer()
     sample_data = create_sample_data()
@@ -157,15 +157,15 @@ def demo_batch_analysis():
     # Use first 4 parts for batch analysis
     batch_parts = sample_data[:4]
     
-    print("  🔄 Creating batch comparison charts...")
+    print("  Creating batch comparison charts...")
     fig = visualizer.create_batch_analysis_chart(batch_parts, 'outputs/batch/batch_analysis.png')
-    print("    ✓ Saved: outputs/batch/batch_analysis.png")
+    print("    Saved: outputs/batch/batch_analysis.png")
     
-    print("  ✅ Batch analysis completed!")
+    print("  Batch analysis completed!")
 
 def demo_interactive_dashboard():
     """Demonstrate interactive dashboard capabilities"""
-    print("\n🖥️  Generating Interactive Dashboard...")
+    print("\nGenerating Interactive Dashboard...")
     
     visualizer = CADVisualizer()
     sample_data = create_sample_data()
@@ -175,18 +175,18 @@ def demo_interactive_dashboard():
     
     # Generate dashboard for each part
     for i, part in enumerate(sample_data[:3]):  # First 3 parts
-        print(f"  📊 Creating dashboard for {part['part_name']}...")
+        print(f"  Creating dashboard for {part['part_name']}...")
         dashboard_html = visualizer.create_interactive_dashboard(
             part, 
             f'outputs/dashboard/dashboard_{i+1}_{part["part_name"].replace(" ", "_").replace("(", "").replace(")", "").replace(":", "").replace(" ", "_")}.html'
         )
         print(f"    ✓ Saved: outputs/dashboard/dashboard_{i+1}_{part['part_name'].replace(' ', '_').replace('(', '').replace(')', '').replace(':', '').replace(' ', '_')}.html")
     
-    print("  ✅ Interactive dashboards completed!")
+    print("  Interactive dashboards completed!")
 
 def demo_summary_reports():
     """Demonstrate summary report generation"""
-    print("\n📋 Generating Summary Reports...")
+    print("\nGenerating Summary Reports...")
     
     visualizer = CADVisualizer()
     sample_data = create_sample_data()
@@ -203,7 +203,7 @@ def demo_summary_reports():
         )
         print(f"    ✓ Saved: outputs/reports/report_{i+1}_{part['part_name'].replace(' ', '_').replace('(', '').replace(')', '').replace(':', '').replace(' ', '_')}.html")
     
-    print("  ✅ Summary reports completed!")
+    print("  Summary reports completed!")
 
 def demo_quantity_variations():
     """Demonstrate quantity discount visualizations"""
@@ -258,7 +258,7 @@ def demo_quantity_variations():
     os.makedirs('outputs/quantity', exist_ok=True)
     
     # Generate quantity analysis chart
-    print("  📊 Creating quantity discount analysis...")
+    print("  Creating quantity discount analysis...")
     fig = visualizer.create_batch_analysis_chart(quantity_data, 'outputs/quantity/quantity_analysis.png')
     print("    ✓ Saved: outputs/quantity/quantity_analysis.png")
     
@@ -271,7 +271,7 @@ def demo_quantity_variations():
         )
         print(f"    ✓ Saved: outputs/quantity/report_qty_{data['quantity']}.html")
     
-    print("  ✅ Quantity variation analysis completed!")
+    print("  Quantity variation analysis completed!")
 
 def create_readme():
     """Create a README file explaining the visualization outputs"""
@@ -279,7 +279,7 @@ def create_readme():
 
 This directory contains all the visualization outputs generated by the CAD Quoting Engine visualizer.
 
-## 📁 Directory Structure
+## Directory Structure
 
 ### Individual Visualizations (`outputs/individual/`)
 - **cost_breakdown.png** - Pie chart and bar chart showing cost breakdown
@@ -299,13 +299,13 @@ This directory contains all the visualization outputs generated by the CAD Quoti
 - **quantity_analysis.png** - Charts showing how costs change with different quantities
 - **report_qty_*.html** - Individual reports for each quantity level
 
-## 🚀 How to Use
+## How to Use
 
 1. **View Static Charts**: Open any `.png` file to see high-resolution charts
 2. **Interactive Dashboards**: Open `.html` files in a web browser for interactive exploration
 3. **Professional Reports**: Open report HTML files for presentation-ready documentation
 
-## 🎨 Visualization Features
+## Visualization Features
 
 - **Cost Breakdown**: Material, machine time, labor, and overhead costs
 - **Complexity Analysis**: 0-10 complexity scoring with visual gauges
@@ -315,14 +315,14 @@ This directory contains all the visualization outputs generated by the CAD Quoti
 - **Lead Time Analysis**: Delivery time based on shipping tiers
 - **Batch Comparisons**: Side-by-side analysis of multiple parts
 
-## 🔧 Technical Details
+## Technical Details
 
 - **Static Charts**: Generated with Matplotlib and Seaborn (300 DPI PNG)
 - **Interactive Charts**: Built with Plotly for web-based exploration
 - **HTML Reports**: Responsive design with CSS styling
 - **Data Export**: All visualizations can be saved in multiple formats
 
-## 📊 Sample Data Used
+## Sample Data Used
 
 The visualizations use realistic sample data including:
 - Suspension Mount (Simple bracket)
@@ -332,7 +332,7 @@ The visualizations use realistic sample data including:
 - Quantity variations (1, 5, 10, 25, 50 units)
 - Shipping tier examples (Standard, Expedited)
 
-## 🎯 Use Cases
+## Use Cases
 
 - **Sales Presentations**: Professional cost breakdowns for clients
 - **Engineering Analysis**: Visual complexity and feature analysis
@@ -347,11 +347,11 @@ Generated by CAD Quoting Engine Visualizer
     with open('outputs/README.md', 'w', encoding='utf-8') as f:
         f.write(readme_content)
     
-    print("  📚 Created: outputs/README.md")
+    print("  Created: outputs/README.md")
 
 def main():
     """Main demo function"""
-    print("🏭 CAD Quoting Engine - Visualization Demo")
+    print("CAD Quoting Engine - Visualization Demo")
     print("=" * 50)
     
     # Create main output directory
@@ -367,8 +367,8 @@ def main():
         create_readme()
         
         print("\n" + "=" * 50)
-        print("🎉 All visualizations generated successfully!")
-        print("\n📁 Output files are saved in the 'outputs' directory:")
+        print("All visualizations generated successfully!")
+        print("\nOutput files are saved in the 'outputs' directory:")
         print("   ├── individual/     - Static charts for single parts")
         print("   ├── batch/          - Multi-part comparison charts")
         print("   ├── dashboard/      - Interactive Plotly dashboards")
@@ -376,13 +376,13 @@ def main():
         print("   ├── quantity/       - Quantity variation analysis")
         print("   └── README.md       - Complete documentation")
         
-        print("\n🚀 To view the results:")
+        print("\nTo view the results:")
         print("   • PNG files: Open in any image viewer")
         print("   • HTML files: Open in a web browser")
         print("   • Interactive dashboards: Best viewed in Chrome/Firefox")
         
     except Exception as e:
-        print(f"\n❌ Error during visualization generation: {e}")
+        print(f"\nError during visualization generation: {e}")
         import traceback
         traceback.print_exc()
 
