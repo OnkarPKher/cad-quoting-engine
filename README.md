@@ -392,8 +392,4 @@ For questions, issues, or contributions, please:
 1. Review existing issues on GitHub
 2. Create a new issue with detailed information
 3. Consider contributing a pull request
-1. Review existing issues on GitHub
-2. Create a new issue with detailed information
-3. Consider contributing a pull request
-
 ---
