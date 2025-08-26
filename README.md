@@ -333,7 +333,7 @@ The complexity score (0-10) is calculated using:
 
 ### Assumptions Made
 
-1. **Material**: 6061 Aluminum (density: 2.7 g/cm³, price: $8.50/kg) - **Updated for realism**
+1. **Material**: 6061 Aluminum (density: 2.7 g/cm³, price: $8.50/kg)
 2. **Machine Rate**: $100/hour for Haas CNC Machines - Baseline specification
 3. **Block Sizes**: Industry-optimized sizes from 25×25×25mm to 600×500×500mm
 4. **Setup Time**: 0.4 hours base setup time
@@ -357,7 +357,7 @@ The complexity score (0-10) is calculated using:
 4. **Complexity Scoring**: Based on surface area, face count, and edge count
 5. **Size-Based Pricing**: Adjustments for small, medium, and large parts
 6. **Three-Phase Milling**: Coarse, medium, and fine milling cost calculation
-7. **Labor Costs**: Comprehensive labor cost breakdown (**Now scales with quantity**)
+7. **Labor Costs**: Comprehensive labor cost breakdown
 8. **Industry-Standard Material Optimization**: Smart block size selection with 20-40% waste target
 9. **Material Efficiency Analysis**: Real-time waste percentage and efficiency reporting
 10. **Feature Detection**: Advanced detection of holes, cavities, sharp edges, and pockets
@@ -389,13 +389,6 @@ This project is open source and available under the [MIT License](LICENSE).
 ## Support
 
 For questions, issues, or contributions, please:
-1. Check the [IMPROVEMENTS_SUMMARY.md](IMPROVEMENTS_SUMMARY.md) for recent changes
-2. Review existing issues on GitHub
-3. Create a new issue with detailed information
-4. Consider contributing a pull request
-
----
-
-**Last Updated**: December 2024  
-**Version**: 2.0  
-**Status**: Production Ready ✅
+1. Review existing issues on GitHub
+2. Create a new issue with detailed information
+3. Consider contributing a pull request
